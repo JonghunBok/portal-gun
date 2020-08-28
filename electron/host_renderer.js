@@ -1,7 +1,9 @@
-const socket = io.connect('http://localhost:3000')
+const SOCK_HOST = ''
+const PEER_HOST = ''
+const socket = io.connect('http://' + HOST + ':3000')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
-  host: 'localhost',
+  host: PEER_HOST,
   port: '3001'
 })
 
@@ -18,6 +20,7 @@ navigator.mediaDevices.getUserMedia({
 
   myPeer.on('call', call => {
     call.answer(stream)
+    console.log("I got a call" + stream)
     const video = document.createElement('video')
     call.on('stream', userVideoStream => {
       addVideoStream(video, userVideoStream)
@@ -25,12 +28,12 @@ navigator.mediaDevices.getUserMedia({
   })
 
   socket.on('user-connected', userId => {
+    console.log(userId + " user is conneced")
     connectToNewUser(userId, stream)
   })
 })
 
-socket.on('user-disconnected', userId => {
-  if (peers[userId]) peers[userId].close()
+socket.on('user-disconnected', userId => { if (peers[userId]) peers[userId].close()
 })
 
 myPeer.on('open', id => {
@@ -38,9 +41,12 @@ myPeer.on('open', id => {
 })
 
 function connectToNewUser(userId, stream) {
+  console.log('connecting user ' + userId)
+  console.log(stream)
   const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
   call.on('stream', userVideoStream => {
+    console.log(stream)
     addVideoStream(video, userVideoStream)
   })
   call.on('close', () => {
@@ -53,7 +59,11 @@ function connectToNewUser(userId, stream) {
 function addVideoStream(video, stream) {
   video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
+    console.log("metadata is loaded")
     video.play()
   })
   videoGrid.append(video)
+
+  console.log("adding ")
+  console.log(video)
 }
